@@ -1,0 +1,62 @@
+<?php
+
+namespace mawadhy\ApplicationInsights;
+
+use ApplicationInsights\Channel\Contracts\Cloud;
+use ApplicationInsights\Telemetry_Client;
+use ApplicationInsights\Telemetry_Context;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+
+class ServiceProvider extends LaravelServiceProvider
+{
+    const DISPLAY_NAME = 'insights';
+
+    /**
+     * Bootstrap the application events.
+     */
+    public function boot()
+    {
+        $this->publishes([
+            __DIR__ . '/../config/application_insights.php' => config_path('application_insights.php'),
+        ]);
+
+        if (config(static::DISPLAY_NAME . '.is_enabled')) {
+            DB::listen(function ($query) {
+                $this->app[static::DISPLAY_NAME]->trackDependency($query->connection->getConfig('host') ?? 'db', $query->time, 'SQL', [
+                    'sql' => $query->sql,
+                    'bindings' => $query->bindings,
+                    'connection' => $query->connectionName,
+                ]);
+            });
+        }
+    }
+
+    /**
+     * Register the service provider.
+     */
+    public function register()
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../config/application_insights.php', static::DISPLAY_NAME);
+
+        $cloudContext = new Cloud();
+        $cloudContext->setRole(env('WEBSITE_SITE_NAME'));
+        $cloudContext->setRoleInstance(env('WEBSITE_INSTANCE_ID'));
+        $context = new Telemetry_Context();
+        $context->setCloudContext($cloudContext);
+        $client = new Telemetry_Client($context);
+
+        $this->app->singleton(ApplicationInsights::class, function () use ($client) {
+            return new ApplicationInsights(
+                $client,
+                config(static::DISPLAY_NAME . '.instrumentation_key'),
+                config(static::DISPLAY_NAME . '.is_enabled'),
+                config(static::DISPLAY_NAME . '.track_anonymous_users')
+            );
+        });
+
+        $this->app->alias(ApplicationInsights::class, static::DISPLAY_NAME);
+        $this->app->register(EventServiceProvider::class);
+
+    }
+}

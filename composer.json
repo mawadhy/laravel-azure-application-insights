@@ -1,0 +1,59 @@
+{
+  "name": "mawadhy/laravel-application-insights",
+  "description": "A Laravel 8 package to send application insights to Microsoft Application Insights",
+  "keywords": [
+    "mawadhy",
+    "insights",
+    "analytics",
+    "monitoring",
+    "laravel"
+  ],
+  "homepage": "https://github.com/mawadhy/laravel-application-insights",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Yanis Kross Yana",
+      "email": "yanis.kross@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.0.2",
+    "laravel/framework": "^9.19",
+    "mawadhy/application-insights": "^0.5.1",
+    "monolog/monolog": "^2.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^7.0",
+    "phpunit/phpunit": "^9.5.10",
+    "nunomaduro/collision": "^6.0"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/mawadhy/ApplicationInsights-PHP"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "mawadhy\\ApplicationInsights\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "mawadhy\\ApplicationInsights\\ServiceProvider"
+      ],
+      "aliases": {
+        "Insights": "mawadhy\\ApplicationInsights\\Facade"
+      }
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "mawadhy\\ApplicationInsights\\Tests\\": "tests"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
